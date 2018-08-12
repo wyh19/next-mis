@@ -1,0 +1,159 @@
+@import '../../styles/var.scss';
+.ant-layout {
+    height: 100%;
+    .logo {
+        height: 32px;
+        background: #333;
+        border-radius: 6px;
+        margin: 16px;
+    }
+    .ant-layout-header {
+        position: relative;
+        padding: 0;
+        background-color: lighten($color: $menu-color, $amount: 20%);
+        height:$header-height;
+        line-height: $header-height;
+        .trigger {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 50px;
+            cursor: pointer;
+            line-height: $header-height;
+            color: #fff;
+            font-size: 20px;
+            background-color: $togger-color;
+            &:hover {
+                background-color: darken($togger-color, $amount: 10%)
+            }
+        }
+        .menu-bar {
+            position: absolute;
+            left: 50px;
+            top: 0;
+            bottom: 0;
+            right: 150px;
+            .menu-bar-wrap {
+                position: absolute;
+                top: 0;
+                right: 50px;
+                bottom: 0;
+                left: 0;
+                overflow: hidden;
+                .menu-bar-container {
+                    position: relative;
+                    width: 3000px;
+                    height: 100%;
+                    transition: left 0.5s ease
+                }
+            }
+            .menu-bar-ctrl {
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                width: 50px;
+                padding: 0 1px;
+                .ctrl-enable{
+                    cursor: pointer;
+                    color: #fff;
+                }
+                .ctrl-disable{
+                    cursor: default;
+                    color:#888;
+                }
+            }
+            .menu {
+                position: relative;
+                float: left;
+                background-color: lighten($color:$menu-color, $amount: 5%);
+                color: #fff;
+                text-align: center;
+                min-width: 80px;
+                max-width: 140px;
+                height: 100%;
+                border-top-left-radius: 10px;
+                border-top-right-radius: 10px;
+                border-left: 1px solid darken($color:$menu-color, $amount: 15%);
+                border-right: 1px solid darken($color:$menu-color, $amount: 15%);
+                box-sizing: border-box;
+                cursor: pointer;
+                &:hover {
+                    background-color: darken($color:$menu-color, $amount: 5%);
+                }
+                .menu-icon {
+                    margin-right: 5px;
+                }
+                .close {
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    color: #ccc;
+                    border-radius: 10px;
+                    &:hover {
+                        background-color: red;
+                    }
+                }
+                div {
+                    padding: 0 15px;
+                }
+                &.active {
+                    background-color: darken($color:$menu-color, $amount: 15%);
+                    &:hover {
+                        background-color: darken($color:$menu-color, $amount: 15%);
+                    }
+                }
+            }
+        }
+        .head-toolbar {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 150px;
+            .logout {
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                width: 40px;
+                line-height: $header-height;
+                color: #fff;
+                cursor: pointer;
+                &:hover {
+                    background-color: darken($color: $menu-color, $amount: 5%);
+                }
+            }
+        }
+    }
+    .ant-layout-content {
+        overflow-y: auto;
+    }
+}
+
+.ant-popover-inner-content{
+    padding: 0;
+    .menu {
+        position: relative;
+        padding: 5px 10px;
+        cursor: pointer;
+        border-bottom: 1px solid #ccc;
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            &:hover {
+                background-color: red;
+                color: #fff;
+            }
+        }
+        &:last-child {
+            border: none;
+        }
+        &.active {
+            background-color: $menu-color;
+            color:#fff;
+        }
+    }
+}
