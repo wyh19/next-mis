@@ -48,7 +48,7 @@ class Frame extends React.PureComponent {
                         <OpenedMenuBar />
                         <HeadToolbar />
                     </Header>
-                    <Content style={{ padding: 24, background: '#fff', minHeight: 280 }}>
+                    <Content style={{ padding:'10px',background: '#fff', minHeight: 280 }}>
                         {this.props.children}
                     </Content>
                 </Layout>

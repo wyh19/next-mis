@@ -3,7 +3,7 @@ import { Icon, Modal } from 'antd'
 import browserCookies from 'browser-cookies'
 import { connect } from 'react-redux'
 
-import { logout } from '../../redux/user.redux'
+import { logout } from '../../redux/framework.redux'
 
 @connect(
     null,

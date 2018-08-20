@@ -1,192 +1,140 @@
+USE_MOCK && require('../mock/menu')
+
 import axios from 'axios'
 import _ from 'lodash'
 
-const MENU_LIST = 'MENU_LIST'
-const OPEN_MENU = 'OPEN_MENU'
-const CLOSE_MENU = 'CLOSE_MENU'
+const MENU_SEARCH_FORM = 'MENU_SEARCH_FORM'
+const MENU_GET_LIST = 'MENU_GET_LIST'
+const MENU_HANDLE_MODAL_FORM = 'MENU_HANDLE_MODAL_FORM'
+const MENU_ADD_INFO = 'MENU_ADD_INFO'
+const MENU_EDIT_INFO = 'MENU_EDIT_INFO'
+const MENU_DELETE_INFO = 'MENU_DELETE_INFO'
+const MENU_SHOW_MSG = 'MENU_SHOW_MSG'
 
 const initState = {
-    menus: [],
-    openedMenus: [],
-    activeMenuCode: null
-}
-
-/**
- * 从嵌套的菜单列表中找出符合code的菜单对象，返回一个全新的值
- * @param {Array} menus 
- * @param {String} code 
- */
-function getMenuByCode(menus, code) {
-    var result = {};
-    for (var key in menus) {
-        var menu = menus[key]
-        if (menu.children) {
-            result = getMenuByCode(menu.children, code)
-            if (result.code === code) {
-                break
-            }
-        } else {
-            if (menu.code === code) {
-                result = { ...menu }
-                break
-            }
-        }
-    }
-    return result
+    searchForm: {},
+    modalOpen: false,
+    formType: 'add',
+    formData: {},
+    dataList: [],
+    msg: '',
 }
 
 export function menu(state = initState, action) {
     switch (action.type) {
-        case MENU_LIST:
-            {
-                return {
-                    ...state,
-                    menus: action.payload
-                }
+        case MENU_SEARCH_FORM: {
+            return {
+                ...state,
+                searchForm: action.data
             }
-        case OPEN_MENU:
-            {
-                let menuCode = action.payload
-                if (_.findIndex(state.openedMenus, v => v.code == menuCode) === -1) {
-                    let menu = getMenuByCode(state.menus, menuCode)
-                    return {
-                        ...state,
-                        openedMenus: state.openedMenus.concat(menu),
-                        activeMenuCode: menuCode
-                    }
-                } else {
-                    return {
-                        ...state,
-                        activeMenuCode: menuCode
-                    }
-                }
+        }
+        case MENU_GET_LIST: {
+            return { ...state, dataList: action.payload }
+        }
+        case MENU_HANDLE_MODAL_FORM: {
+            return {
+                ...state,
+                formType: action.formType,
+                modalOpen: action.modalOpen,
+                formData: action.formData
             }
-        case CLOSE_MENU:
-            {
-                let menuCode = action.payload
-                let openedMenus = _.filter(state.openedMenus, v => v.code !== menuCode)
-                let activeMenuCode = state.activeMenuCode === menuCode ? (openedMenus.length > 0 ? openedMenus[0].code : null) : state.activeMenuCode
-                return {
-                    ...state,
-                    openedMenus: openedMenus,
-                    activeMenuCode: activeMenuCode
-                }
+        }
+        case MENU_ADD_INFO: {
+            let dataList = _.cloneDeep(state.dataList)
+            dataList.push(action.data)
+            return {
+                ...state,
+                modalOpen: false,
+                dataList: dataList
             }
+        }
+        case MENU_EDIT_INFO: {
+            let dataList = _.cloneDeep(state.dataList)
+            let toUpdate = _.find(dataList, item => (item.ID === action.data.ID))
+            _.assign(toUpdate, action.data)
+            return {
+                ...state,
+                modalOpen: false,
+                dataList: dataList
+            }
+        }
+        case MENU_DELETE_INFO: {
+            let dataList = _.cloneDeep(state.dataList)
+            _.remove(dataList, item => item.ID === action.ID)
+            return {
+                ...state,
+                dataList: dataList
+            }
+        }
         default:
             return state
     }
 }
 
-function menuList(data) {
-    return {
-        type: MENU_LIST,
-        payload: data
-    }
-}
-
-
-export function getMenuList() {
-    const menus = [{
-        icon: 'laptop',
-        text: '工作台',
-        code: 'bench'
-    },
-    {
-        icon: 'car',
-        text: 'JSON',
-        children: [{
-            text: '编辑器',
-            code: 'jsoneditor'
-        }]
-    },
-    {
-        icon: 'coffee',
-        text: 'Demo',
-        children: [{
-            text: '表格',
-            code: 'table'
-        },
-        {
-            text: '树',
-            code: 'tree'
-        },
-        {
-            text: '对话框',
-            code: 'modal'
-        }
-        ]
-    },
-    {
-        icon: 'rocket',
-        text: '动画',
-        children: [{
-            text: '官方教程',
-            code: 'official-animation'
-        },
-        {
-            text: '基础动画',
-            code: 'base-animation'
-        },
-        {
-            text: '动画案例',
-            code: 'example-animation'
-        }
-        ]
-    },
-    {
-        icon: 'compass',
-        text: '拖拽',
-        children: [{
-            text: 'Chess',
-            code: 'chess'
-        },
-        {
-            text: 'Dustbin',
-            code: 'dustbin'
-        },
-        {
-            text: 'DragAround',
-            code: 'dragaround'
-        },
-        {
-            text: 'Nesting',
-            code: 'nesting'
-        },
-        {
-            text: 'Sortable',
-            code: 'sortable'
-        },
-        {
-            text: 'Customize',
-            code: 'customize'
-        },
-        {
-            text: 'Other',
-            code: 'other'
-        }
-        ]
-    },
-    {
-        icon: 'exception',
-        text: '关于',
-        code: 'about'
-    }
-    ]
+export function getList(params) {
     return dispatch => {
-        dispatch(menuList(menus))
+        dispatch({ type: MENU_SEARCH_FORM, data: params })
+        axios.get('/api/menu/list', { params })
+            .then(res => {
+                dispatch({ type: MENU_GET_LIST, payload: res.data })
+            })
+            .catch(e => {
+
+            })
     }
 }
 
-export function openMenu(menuCode) {
-    return {
-        type: OPEN_MENU,
-        payload: menuCode
+export function handleModalForm(formType, modalOpen, formData) {
+    return { type: MENU_HANDLE_MODAL_FORM, formType, modalOpen, formData }
+}
+
+export function addInfo(info) {
+    return dispatch => {
+        axios.post('/api/menu/add', info)
+            .then(res => {
+                const { code, msg, data } = res.data
+                if (code == 1) {
+                    dispatch({ type: MENU_ADD_INFO, msg, data })
+                } else {
+                    dispatch({ type: MENU_SHOW_MSG, msg })
+                }
+            })
+            .catch(e => {
+
+            })
     }
 }
 
-export function closeMenu(menuCode) {
-    return {
-        type: CLOSE_MENU,
-        payload: menuCode
+export function editInfo(info) {
+    return dispatch => {
+        axios.post('/api/menu/edit', info)
+            .then(res => {
+                const { code, msg, data } = res.data
+                if (code == 1) {
+                    dispatch({ type: MENU_EDIT_INFO, msg, data })
+                } else {
+                    dispatch({ type: MENU_SHOW_MSG, msg })
+                }
+            })
+            .catch(e => {
+
+            })
+    }
+}
+
+export function deleteInfo(ID) {
+    return dispatch => {
+        axios.post('/api/menu/delete', { ID })
+            .then(res => {
+                const { code, msg } = res.data
+                if (code == 1) {
+                    dispatch({ type: MENU_DELETE_INFO, msg, ID })
+                } else {
+                    dispatch({ type: MENU_SHOW_MSG, msg })
+                }
+            })
+            .catch(e => {
+
+            })
     }
 }

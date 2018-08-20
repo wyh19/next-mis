@@ -1,104 +1,157 @@
-/**
- * Created by 30113 on 2018/6/11.
- */
-import axios from 'axios'
+USE_MOCK && require('../mock/user')
 
-const ERROR_MSG = 'ERROR_MSG'
-const LOAD_DATA = 'LOAD_DATA'
-const AUTH_SUCCESS = 'AUTH_SUCCESS'
-const CHANGE_INPUT = 'CHANGE_INPUT'
-const LOGOUT = 'LOGOUT'
+import axios from 'axios'
+import _ from 'lodash'
+
+const USER_SEARCH_FORM = 'USER_SEARCH_FORM'
+const USER_GET_LIST = 'USER_GET_LIST'
+const USER_HANDLE_MODAL_FORM = 'USER_HANDLE_MODAL_FORM'
+const USER_ADD_INFO = 'USER_ADD_INFO'
+const USER_EDIT_INFO = 'USER_EDIT_INFO'
+const USER_DELETE_INFO = 'USER_DELETE_INFO'
+const USER_SHOW_MSG = 'USER_SHOW_MSG'
+const USER_GET_ORGA_LIST = 'USER_GET_ORGA_LIST'
 
 const initState = {
-    redirectTo: '',
+    searchForm: {},
+    modalOpen: false,
+    formType: 'add',
+    formData: {},
+    dataList: [],
     msg: '',
-    isAuth: false,
-    user: '',
-    pwd: ''
+    orgaList: [],
 }
 
 export function user(state = initState, action) {
     switch (action.type) {
-        case AUTH_SUCCESS:
-            return { ...state, isAuth: true, user: action.payload.user, msg: '', redirectTo: '/home' }
-        case ERROR_MSG:
-            return { ...state, msg: action.msg }
-        case LOAD_DATA:
-            return { ...state, ...action.payload, isAuth: true }
-        case CHANGE_INPUT:
-            return { ...state, msg:action.payload.msg, [action.payload.key]: action.payload.value }
-        case LOGOUT:
-            return {...state,isAuth:false,redirectTo: '/login'}
-            default:
+        case USER_SEARCH_FORM: {
+            return {
+                ...state,
+                searchForm: action.data
+            }
+        }
+        case USER_GET_LIST: {
+            return { ...state, dataList: action.payload }
+        }
+        case USER_GET_ORGA_LIST: {
+            return { ...state, orgaList: action.payload }
+        }
+        case USER_HANDLE_MODAL_FORM: {
+            return {
+                ...state,
+                formType: action.formType,
+                modalOpen: action.modalOpen,
+                formData: action.formData
+            }
+        }
+        case USER_ADD_INFO: {
+            let dataList = _.cloneDeep(state.dataList)
+            dataList.push(action.data)
+            return {
+                ...state,
+                modalOpen: false,
+                dataList: dataList
+            }
+        }
+        case USER_EDIT_INFO: {
+            let dataList = _.cloneDeep(state.dataList)
+            let toUpdate = _.find(dataList, item => (item.ID === action.data.ID))
+            _.assign(toUpdate, action.data)
+            return {
+                ...state,
+                modalOpen: false,
+                dataList: dataList
+            }
+        }
+        case USER_DELETE_INFO: {
+            let dataList = _.cloneDeep(state.dataList)
+            _.remove(dataList, item => item.ID === action.ID)
+            return {
+                ...state,
+                dataList: dataList
+            }
+        }
+        default:
             return state
     }
 }
 
-function authSuccess(obj) {
-    return { type: AUTH_SUCCESS, payload: obj }
-}
-
-function errorMsg(msg) {
-    return { msg, type: ERROR_MSG, }
-}
-
-export function changeInput(key, value) {
-    if (key == 'user' && !value) {
-        return { type: CHANGE_INPUT, payload: { key, value ,msg:'用户名不能为空'} }
-    } else if (key == 'pwd' && !value) {
-        return { type: CHANGE_INPUT, payload: { key, value ,msg:'密码不能为空'} }
-    } else {
-        return { type: CHANGE_INPUT, payload: { key, value ,msg:''} }
-    }
-}
-
-export function loadData(userinfo) {
-    return { type: LOAD_DATA, payload: userinfo }
-}
-
-export function register({ user, pwd, repwd }) {
-    if (!user || !pwd || !repwd) {
-        return errorMsg('用户名密码必须输入')
-    }
-    if (pwd !== repwd) {
-        return errorMsg('密码和确认密码不同')
-    }
+export function getList(params) {
     return dispatch => {
-        axios.post('/api/user/register', { user, pwd })
+        dispatch({ type: USER_SEARCH_FORM, data: params })
+        axios.get('/api/user/list', { params })
             .then(res => {
-                if (res.status === 200 && res.data.code === 0) {
-                    dispatch(authSuccess({ user, pwd }))
-                } else {
-                    dispatch(errorMsg(res.data.msg))
-                }
+                dispatch({ type: USER_GET_LIST, payload: res.data })
+            })
+            .catch(e => {
+
             })
     }
 }
 
-export function login({ user, pwd }) {
-    if (!user) {
-        return errorMsg('用户名不能为空')
-    }
-    if (!pwd) {
-        return errorMsg('密码不能为空')
-    }
+export function handleModalForm(formType, modalOpen, formData) {
+    return { type: USER_HANDLE_MODAL_FORM, formType, modalOpen, formData }
+}
+
+export function addInfo(info) {
     return dispatch => {
-        axios.post('/api/user/login', { user, pwd })
+        axios.post('/api/user/add', info)
             .then(res => {
-                if (res.status === 200 && res.data.code === 0) {
-                    dispatch(authSuccess({ user, pwd }))
+                const { code, msg, data } = res.data
+                if (code == 1) {
+                    dispatch({ type: USER_ADD_INFO, msg, data })
                 } else {
-                    dispatch(errorMsg(res.data.msg))
+                    dispatch({ type: USER_SHOW_MSG, msg })
                 }
             })
             .catch(e => {
-                //dispatch(errorMsg('网络发生错误'))
-                //todo:假设登录成功
-                dispatch(authSuccess({ user, pwd }))
+
             })
     }
 }
 
-export function logout(){
-    return {type:LOGOUT}
+export function editInfo(info) {
+    return dispatch => {
+        axios.post('/api/user/edit', info)
+            .then(res => {
+                const { code, msg, data } = res.data
+                if (code == 1) {
+                    dispatch({ type: USER_EDIT_INFO, msg, data })
+                } else {
+                    dispatch({ type: USER_SHOW_MSG, msg })
+                }
+            })
+            .catch(e => {
+
+            })
+    }
+}
+
+export function deleteInfo(ID) {
+    return dispatch => {
+        axios.post('/api/user/delete', { ID })
+            .then(res => {
+                const { code, msg } = res.data
+                if (code == 1) {
+                    dispatch({ type: USER_DELETE_INFO, msg, ID })
+                } else {
+                    dispatch({ type: USER_SHOW_MSG, msg })
+                }
+            })
+            .catch(e => {
+
+            })
+    }
+}
+
+export function getOrgaList() {
+    return dispatch => {
+        axios.get('/api/orga/list')
+            .then(res => {
+                dispatch({ type: USER_GET_ORGA_LIST, payload: res.data })
+            })
+            .catch(e => {
+
+            })
+    }
 }

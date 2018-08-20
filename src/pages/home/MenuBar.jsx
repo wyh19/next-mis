@@ -4,13 +4,13 @@
 import React from 'react'
 import { Menu, Icon } from 'antd';
 import { connect } from 'react-redux'
-import { getMenuList, openMenu } from '../../redux/menu.redux'
+import { getMenuList, openMenu } from '../../redux/framework.redux'
 
 const SubMenu = Menu.SubMenu
 const MenuItem = Menu.Item
 
 @connect(
-    state => state.menu,
+    state => state.framework,
     { getMenuList, openMenu }
 )
 class MenuBar extends React.Component {

@@ -4,7 +4,7 @@
 const path = require("path")
 const HTMLWebpackPlugin = require("html-webpack-plugin")
 const MiniCssExtractPlugin = require("mini-css-extract-plugin")
-var LodashModuleReplacementPlugin = require('lodash-webpack-plugin')
+const LodashModuleReplacementPlugin = require('lodash-webpack-plugin')
 
 let config = {
     entry: {
@@ -13,7 +13,8 @@ let config = {
     output: {
         path: path.join(__dirname, '../dist'),
         filename: '[name].[hash].js',
-        chunkFilename: "[name].[hash].js"
+        chunkFilename: "[name].[hash].js",
+        publicPath: ''
     },
     optimization: {
         runtimeChunk: {
@@ -21,10 +22,13 @@ let config = {
         },
         splitChunks: {
             cacheGroups: {
-                vendor: {
-                    test: /node_modules/,
-                    name: "vendor",
-                    chunks: "all"
+                commons: {
+                    name: "commons",
+                    chunks: "initial",
+                    minChunks: 2
+                    // test: /node_modules/,
+                    // name: "vendor",
+                    // chunks: "all"
                 }
             }
         }
@@ -104,9 +108,12 @@ let config = {
             template: path.join(__dirname, '../public/index.html')
         }),
         new MiniCssExtractPlugin({
-            filename: "[name]-[hash].css"
+            filename: "[name].[hash].css"
         }),
-        new LodashModuleReplacementPlugin(),
+        new LodashModuleReplacementPlugin({
+            'collections': true,
+            'paths': true
+        }),
     ],
     resolve: {
         modules: [

@@ -30,5 +30,8 @@ config.module.rules[1].use[0] = {
 }
 config.plugins.push(new webpack.HotModuleReplacementPlugin())
 config.plugins.push(new webpack.NamedModulesPlugin())
+config.plugins.push(new webpack.DefinePlugin({
+    'USE_MOCK':true
+}))
 
 module.exports = config
