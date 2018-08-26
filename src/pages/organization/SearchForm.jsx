@@ -1,11 +1,14 @@
 import React, { PureComponent } from 'react'
 import { Form, Row, Col, Input, Button, Radio } from 'antd'
-import {connect} from 'react-redux'
+import { connect } from 'react-redux'
 import { getList } from '../../redux/organization.redux'
 
-const RadioGroup = Radio.Group
 const { Item, create } = Form
 
+@connect(
+    state => state.organization,
+    { getList }
+)
 @create({
     mapPropsToFields(props) {
         if (props.searchForm) {
@@ -19,26 +22,33 @@ const { Item, create } = Form
         }
     }
 })
-@connect(
-    state=>state.organization,
-    {getList}
-)
 class SearchForm extends PureComponent {
     handleSearch = (e) => {
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
-            if(!err){
+            if (!err) {
+                //配入分页条件
+                values.pagenum = 1
+                values.pagesize = this.props.pagination.pageSize
                 this.props.getList(values)
             }
         })
     }
     handleReset = () => {
         this.props.form.resetFields()
-        this.props.getList()
+        var values = {}
+        //配入分页条件
+        values.pagenum = 1
+        values.pagesize = this.props.pagination.pageSize
+        this.props.getList(values)
     }
-    componentDidMount(){
+    componentDidMount() {
         //todo:这里可以做一个优化，区分第一次打开和标签切换
-        this.props.getList()
+        var values = this.props.searchForm
+        //配入分页条件
+        values.pagenum = this.props.pagination.current
+        values.pagesize = this.props.pagination.pageSize
+        this.props.getList(values)
     }
     render() {
         const { getFieldDecorator } = this.props.form
@@ -46,44 +56,36 @@ class SearchForm extends PureComponent {
             <Form onSubmit={this.handleSearch}>
                 <Row gutter={16}>
                     <Col span={6}>
-                        <Item label="名称">
-                            {getFieldDecorator('Name')(
+                        <Item label='名称'>
+                            {getFieldDecorator('name')(
                                 <Input />
                             )}
                         </Item>
                     </Col>
                     <Col span={6}>
-                        <Item label="状态">
-                            {getFieldDecorator('Status')(
-                                <RadioGroup>
-                                    <Radio value={1}>启用</Radio>
-                                    <Radio value={2}>不启用</Radio>
-                                </RadioGroup>
+                        <Item label='状态'>
+                            {getFieldDecorator('status')(
+                                <Radio.Group>
+                                    <Radio value={0}>启用</Radio>
+                                    <Radio value={1}>停用</Radio>
+                                </Radio.Group>
                             )}
                         </Item>
                     </Col>
                     <Col span={6}>
-                        <Item label="管理平台">
-                            {getFieldDecorator('IsManagerPlatform')(
-                                <RadioGroup>
-                                    <Radio value={true}>是</Radio>
-                                    <Radio value={false}>否</Radio>
-                                </RadioGroup>
+                        <Item label='管理企业'>
+                            {getFieldDecorator('ismanagerplatform')(
+                                <Radio.Group>
+                                    <Radio value={1}>是</Radio>
+                                    <Radio value={0}>否</Radio>
+                                </Radio.Group>
                             )}
                         </Item>
                     </Col>
                     <Col span={6}>
-                        <Item label="关键字">
-                            {getFieldDecorator('KeyWord')(
-                                <Input />
-                            )}
-                        </Item>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col span={24} style={{ textAlign: 'right' }}>
-                        <Button type="primary" htmlType="submit">查询</Button>
+                        <Button type='primary' htmlType='submit'>查询</Button>
                         <Button style={{ marginLeft: 8 }} onClick={this.handleReset}>重置</Button>
+
                     </Col>
                 </Row>
             </Form>

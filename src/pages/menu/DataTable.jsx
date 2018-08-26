@@ -8,6 +8,15 @@ import { getList, handleModalForm, deleteInfo } from '../../redux/menu.redux'
   { getList, handleModalForm, deleteInfo }
 )
 class DataTable extends PureComponent {
+  componentDidMount() {
+    this.props.getList()
+  }
+  componentDidUpdate(){
+    if(this.props.refresh){
+      console.log('refresh')
+      this.props.getList()
+    }
+  }
   handleInfo = (type, open, data) => {
     this.props.handleModalForm(type, open, data)
   }
@@ -17,48 +26,51 @@ class DataTable extends PureComponent {
   render() {
     const columns = [{
       title: '名称',
-      dataIndex: 'Name',
-      key: 'Name',
-    }, 
+      dataIndex: 'name',
+      key: 'name',
+    },
     {
       title: 'Url',
-      dataIndex: 'Url',
-      key: 'Url',
-    }, 
+      dataIndex: 'url',
+      key: 'url',
+    },
     {
       title: '状态',
-      dataIndex: 'Status',
-      key: 'Status',
+      dataIndex: 'status',
+      key: 'status',
       render: text => {
-        if (text == 1) {
-          return (<div>启用</div>)
-        } else
-          if (text == 2) {
-            return (<div>不启用</div>)
-          } else {
-            return null
-          }
+        if (text === 0) {
+          return (<div>可用</div>)
+        } {
+          return (<div>停用</div>)
+        }
       }
-    }, 
+    },
+    {
+      title: '层级',
+      dataIndex: 'level',
+      key: 'level',
+    },
     {
       title: '创建者',
-      dataIndex: 'Creator',
-      key: 'Creator',
-    }, 
+      dataIndex: 'creatorid',
+      key: 'creatorid',
+    },
     {
       title: '创建时间',
-      dataIndex: 'CreateTime',
-      key: 'CreateTime',
-    }, {
-      title: (<div>操作<Divider type="vertical" />
-        <a href="javascript:;" onClick={() => this.handleInfo('add', true)}>新增</a></div>),
+      dataIndex: 'createtime',
+      key: 'createtime',
+    },
+    {
+      title: (<div>操作<Divider type='vertical' />
+        <a href='javascript:;' onClick={() => this.handleInfo('add', true)}>新增</a></div>),
       key: 'action',
       render: (text, record) => (
         <span>
-          <a href="javascript:;" onClick={() => this.handleInfo('edit', true, record)}>编辑</a>
-          <Divider type="vertical" />
-          <Popconfirm title="确认删除?" onConfirm={() => this.handleDelete(record.ID)}>
-            <a href="javascript:;">删除</a>
+          <a href='javascript:;' onClick={() => this.handleInfo('update', true, record)}>编辑</a>
+          <Divider type='vertical' />
+          <Popconfirm title='确认删除?' onConfirm={() => this.handleDelete(record.id)}>
+            <a href='javascript:;'>删除</a>
           </Popconfirm>
         </span>
       )
@@ -67,7 +79,8 @@ class DataTable extends PureComponent {
     ];
     return (
       <Table
-        rowKey={record => record.ID}
+        defaultExpandAllRows={true}
+        rowKey={record => record.id}
         dataSource={this.props.dataList}
         columns={columns}
         pagination={false} />

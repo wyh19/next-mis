@@ -17,9 +17,9 @@ config.devServer = {
     open:true,
     historyApiFallback:true,
     proxy:{
-        "/api":{
-            target: "http://localhost:9093",
-            pathRewrite: {"^/api" : ""}
+        '/api':{
+            target: 'http://localhost:9093',
+            pathRewrite: {'^/api' : ''}
         }
     }
 }

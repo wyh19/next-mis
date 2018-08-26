@@ -3,56 +3,62 @@ const _ = require('lodash')
 const getParam = require('../common/common').getParam
 
 let arr = [{
-    ID: '111',
-    Name: "用户组1",
-    Description:'xxx',
-    Creator: "System",
-    CreateTime: Mock.Random.date(),
-    Roles:['111'],
-    Users:['111','222'],
-},{
-    ID: '222',
-    Name: "用户组2",
-    Description:'xxx',
-    Creator: "System",
-    CreateTime: Mock.Random.date(),
-    Roles:['222'],
-    Users:['111','222'],
+    id: 1,
+    name: '用户组1',
+    type: 1,
+    creatorid: 1,
+    createtime: '2018-08-15',
+    roleids: [1, 2]
+}, {
+    id: 2,
+    name: '用户组2',
+    type: 2,
+    creatorid: 1,
+    createtime: '2018-08-15',
+    roleids: [1]
 }]
 
 //查询
-Mock.mock(/\/api\/userGroup\/list/, 'get', function (options) {
-    const Name = getParam(options.url,'Name')
-    if(Name){
-        return _.filter(arr,item=>item.Name.indexOf(Name)>-1)
-    }else{
-        return arr
+Mock.mock(/\/api\/usergroup\/select/, 'get', function (options) {
+    const name = getParam(options.url, 'name')
+    const pagenum = parseInt(getParam(options.url, 'pagenum'))
+    const pagesize = parseInt(getParam(options.url, 'pagesize'))
+    var data = arr
+    if (name) {
+        data = _.filter(data, item => item.name.indexOf(name) > -1)
     }
+    const resultcounts = data.length
+    if (!isNaN(pagenum) && !isNaN(pagesize)) {
+        var start = (pagenum - 1) * pagesize
+        var end = pagenum * pagesize
+        data = data.slice(start, end)
+    }
+    return { code: 0, resultcounts, data }
 })
 
 //新增
-Mock.mock('/api/userGroup/add', 'post', function (options) {
+Mock.mock('/api/usergroup/add', 'post', function (options) {
     let info = JSON.parse(options.body)
-    info.ID = Mock.Random.id()
-    info.CreateTime = Mock.Random.date()
-    info.Creator = 'System'
+    info.id = arr.length > 0 ? arr[arr.length - 1].id + 1 : 1
+    info.createtime = Mock.Random.date()
     arr.push(info)
-    return { code: 1, msg: '新增成功', data: info }
+    return { code: 0, msg: '新增成功', data: info }
 })
 
 //修改
-Mock.mock('/api/userGroup/edit', 'post', function (options) {
+Mock.mock('/api/usergroup/update', 'post', function (options) {
     let info = JSON.parse(options.body)
-    let origin = _.find(arr,(item)=>(item.ID === info.ID))
-    let updated = _.assign(origin,info)
-    return { code: 1, msg: '修改成功', data: updated }
+    let origin = _.find(arr, (item) => (item.id === info.id))
+    let updated = _.assign(origin, info)
+    return { code: 0, msg: '修改成功', data: updated }
 })
 
 //删除
-Mock.mock('/api/userGroup/delete', 'post', function (options) {
-    let ID = JSON.parse(options.body).ID
+Mock.mock(/\/api\/usergroup\/delete/, 'get', function (options) {
+    let id = getParam(options.url, 'id')
+    id = parseInt(id)
     _.remove(arr, item => (
-        item.ID === ID
+        item.id === id
     ))
-    return { code: 1, msg: '删除成功' }
+    return { code: 0, msg: '删除成功' }
 })

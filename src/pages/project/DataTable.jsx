@@ -1,11 +1,11 @@
 import React, { PureComponent } from 'react'
-import { Table, Divider, Popconfirm } from 'antd'
+import { Table, Divider, Popconfirm, Tag } from 'antd'
 import { connect } from 'react-redux'
-import { getList, handleModalForm, deleteInfo } from '../../redux/project.redux'
+import { handleModalForm, deleteInfo ,getList} from '../../redux/project.redux'
 
 @connect(
   state => state.project,
-  { getList, handleModalForm, deleteInfo }
+  { handleModalForm, deleteInfo,getList }
 )
 class DataTable extends PureComponent {
   handleInfo = (type, open, data) => {
@@ -14,46 +14,61 @@ class DataTable extends PureComponent {
   handleDelete = (id) => {
     this.props.deleteInfo(id)
   }
+  handleTableChange = (pagination) => {
+    let values = this.props.searchForm
+    //配入分页条件
+    values.pagenum = pagination.current
+    values.pagesize = pagination.pageSize
+    this.props.getList(values)
+  }
   render() {
     const columns = [{
       title: '名称',
-      dataIndex: 'Name',
-      key: 'Name',
-    }, 
+      dataIndex: 'name',
+      key: 'name',
+      align: 'center',
+    },
     {
       title: '状态',
-      dataIndex: 'Status',
-      key: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      align: 'center',
       render: text => {
-        if (text == 1) {
+        if (text === 0) {
           return (<div>启用</div>)
-        } else
-          if (text == 2) {
-            return (<div>不启用</div>)
-          } else {
-            return null
-          }
+        } else {
+          return (<div>停用</div>)
+        }
       }
+    },
+    {
+      title: '项目经理',
+      dataIndex: 'pmid',
+      key: 'pmid',
+      align: 'center',
     }, 
     {
       title: '创建者',
-      dataIndex: 'Creator',
-      key: 'Creator',
-    }, 
+      dataIndex: 'creatorid',
+      key: 'creatorid',
+      align: 'center',
+    },
     {
       title: '创建时间',
-      dataIndex: 'CreateTime',
-      key: 'CreateTime',
+      dataIndex: 'createtime',
+      key: 'createtime',
+      align: 'center',
     }, {
-      title: (<div>操作<Divider type="vertical" />
-        <a href="javascript:;" onClick={() => this.handleInfo('add', true)}>新增</a></div>),
+      title: (<div>操作<Divider type='vertical' />
+        <a href='javascript:;' onClick={() => this.handleInfo('add', true)}>新增</a></div>),
       key: 'action',
+      align: 'center',
       render: (text, record) => (
         <span>
-          <a href="javascript:;" onClick={() => this.handleInfo('edit', true, record)}>编辑</a>
-          <Divider type="vertical" />
-          <Popconfirm title="确认删除?" onConfirm={() => this.handleDelete(record.ID)}>
-            <a href="javascript:;">删除</a>
+          <a href='javascript:;' onClick={() => this.handleInfo('update', true, record)}>编辑</a>
+          <Divider type='vertical' />
+          <Popconfirm title='确认删除?' onConfirm={() => this.handleDelete(record.id)}>
+            <a href='javascript:;'>删除</a>
           </Popconfirm>
         </span>
       )
@@ -62,10 +77,12 @@ class DataTable extends PureComponent {
     ];
     return (
       <Table
-        rowKey={record => record.ID}
+        rowKey={record => record.id}
         dataSource={this.props.dataList}
         columns={columns}
-        pagination={false} />
+        pagination={this.props.pagination}
+        onChange={this.handleTableChange}
+      />
     )
   }
 }

@@ -10,7 +10,8 @@ const PROJECT_ADD_INFO = 'PROJECT_ADD_INFO'
 const PROJECT_EDIT_INFO = 'PROJECT_EDIT_INFO'
 const PROJECT_DELETE_INFO = 'PROJECT_DELETE_INFO'
 const PROJECT_SHOW_MSG = 'PROJECT_SHOW_MSG'
-const PROJECT_GET_PROJMANAGER_LIST = 'PROJECT_GET_PROJMANAGER_LIST'
+const PROJECT_GET_ORG_LIST = 'PROJECT_GET_ORG_LIST'
+const PROJECT_GET_USERINFO_LIST = 'PROJECT_GET_USERINFO_LIST'
 
 const initState = {
     searchForm: {},
@@ -19,7 +20,14 @@ const initState = {
     formData: {},
     dataList: [],
     msg: '',
-    projManagerList: [],
+    orgList: [],
+    userinfoList:[],
+    pagination: {
+        showSizeChanger: true,
+        pageSize: 10,
+        current: 1,
+        total: 0
+    }
 }
 
 export function project(state = initState, action) {
@@ -31,10 +39,21 @@ export function project(state = initState, action) {
             }
         }
         case PROJECT_GET_LIST: {
-            return { ...state, dataList: action.payload }
+            let pagination = _.cloneDeep(state.pagination)
+            pagination.total = action.total
+            pagination.current = action.current
+            pagination.pageSize = action.pageSize
+            return {
+                ...state,
+                dataList: action.payload,
+                pagination: pagination
+            }
         }
-        case PROJECT_GET_PROJMANAGER_LIST: {
-            return { ...state, projManagerList: action.payload }
+        case PROJECT_GET_ORG_LIST: {
+            return { ...state, orgList: action.payload }
+        }
+        case PROJECT_GET_USERINFO_LIST: {
+            return { ...state, userinfoList: action.payload }
         }
         case PROJECT_HANDLE_MODAL_FORM: {
             return {
@@ -46,16 +65,19 @@ export function project(state = initState, action) {
         }
         case PROJECT_ADD_INFO: {
             let dataList = _.cloneDeep(state.dataList)
-            dataList.push(action.data)
+            dataList.unshift(action.data)
+            let pagination = _.cloneDeep(state.pagination)
+            pagination.total += 1
             return {
                 ...state,
                 modalOpen: false,
-                dataList: dataList
+                dataList: dataList,
+                pagination:pagination
             }
         }
         case PROJECT_EDIT_INFO: {
             let dataList = _.cloneDeep(state.dataList)
-            let toUpdate = _.find(dataList, item => (item.ID === action.data.ID))
+            let toUpdate = _.find(dataList, item => (item.id === action.data.id))
             _.assign(toUpdate, action.data)
             return {
                 ...state,
@@ -65,10 +87,13 @@ export function project(state = initState, action) {
         }
         case PROJECT_DELETE_INFO: {
             let dataList = _.cloneDeep(state.dataList)
-            _.remove(dataList, item => item.ID === action.ID)
+            _.remove(dataList, item => item.id === action.id)
+            let pagination = _.cloneDeep(state.pagination)
+            pagination.total -= 1
             return {
                 ...state,
-                dataList: dataList
+                dataList: dataList,
+                pagination: pagination
             }
         }
         default:
@@ -79,9 +104,20 @@ export function project(state = initState, action) {
 export function getList(params) {
     return dispatch => {
         dispatch({ type: PROJECT_SEARCH_FORM, data: params })
-        axios.get('/api/project/list', { params })
+        axios.get('/api/project/select', { params })
             .then(res => {
-                dispatch({ type: PROJECT_GET_LIST, payload: res.data })
+                const { code, msg, resultcounts, data } = res.data
+                if (code == 0) {
+                    dispatch({
+                        type: PROJECT_GET_LIST,
+                        payload: data,
+                        total: resultcounts,
+                        current: params.pagenum,
+                        pageSize: params.pagesize
+                    })
+                } else {
+                    dispatch({ type: ORG_SHOW_MSG, msg })
+                }
             })
             .catch(e => {
 
@@ -98,7 +134,7 @@ export function addInfo(info) {
         axios.post('/api/project/add', info)
             .then(res => {
                 const { code, msg, data } = res.data
-                if (code == 1) {
+                if (code == 0) {
                     dispatch({ type: PROJECT_ADD_INFO, msg, data })
                 } else {
                     dispatch({ type: PROJECT_SHOW_MSG, msg })
@@ -112,10 +148,10 @@ export function addInfo(info) {
 
 export function editInfo(info) {
     return dispatch => {
-        axios.post('/api/project/edit', info)
+        axios.post('/api/project/update', info)
             .then(res => {
                 const { code, msg, data } = res.data
-                if (code == 1) {
+                if (code == 0) {
                     dispatch({ type: PROJECT_EDIT_INFO, msg, data })
                 } else {
                     dispatch({ type: PROJECT_SHOW_MSG, msg })
@@ -127,13 +163,13 @@ export function editInfo(info) {
     }
 }
 
-export function deleteInfo(ID) {
+export function deleteInfo(id) {
     return dispatch => {
-        axios.post('/api/project/delete', { ID })
+        axios.get('/api/project/delete',  { params: { id } })
             .then(res => {
                 const { code, msg } = res.data
-                if (code == 1) {
-                    dispatch({ type: PROJECT_DELETE_INFO, msg, ID })
+                if (code == 0) {
+                    dispatch({ type: PROJECT_DELETE_INFO, msg, id })
                 } else {
                     dispatch({ type: PROJECT_SHOW_MSG, msg })
                 }
@@ -144,11 +180,39 @@ export function deleteInfo(ID) {
     }
 }
 
-export function getProjManagerList() {
+export function getOrgList() {
     return dispatch => {
-        axios.get('/api/projManager/list')
+        axios.get('/api/organization/select')
             .then(res => {
-                dispatch({ type: PROJECT_GET_PROJMANAGER_LIST, payload: res.data })
+                const { code, msg,  data } = res.data
+                if (code == 0) {
+                    dispatch({
+                        type: PROJECT_GET_ORG_LIST,
+                        payload: data,
+                    })
+                } else {
+                    dispatch({ type: PROJECT_SHOW_MSG, msg })
+                }
+            })
+            .catch(e => {
+
+            })
+    }
+}
+
+export function getUserinfoList() {
+    return dispatch => {
+        axios.get('/api/userinfo/select')
+            .then(res => {
+                const { code, msg,  data } = res.data
+                if (code == 0) {
+                    dispatch({
+                        type: PROJECT_GET_USERINFO_LIST,
+                        payload: data,
+                    })
+                } else {
+                    dispatch({ type: PROJECT_SHOW_MSG, msg })
+                }
             })
             .catch(e => {
 

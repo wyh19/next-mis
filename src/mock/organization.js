@@ -3,56 +3,62 @@ const _ = require('lodash')
 const getParam = require('../common/common').getParam
 
 let arr = [{
-    ID: '111',
-    Name: "组织1",
-    Status: 1,
-    Creator: "System",
-    CreateTime: Mock.Random.date(),
-    IsManagerPlatform: true,
-    KeyWord: "KeyWord",
-},{
-    ID: '222',
-    Name: "组织2",
-    Status: 1,
-    Creator: "System",
-    CreateTime: Mock.Random.date(),
-    IsManagerPlatform: true,
-    KeyWord: "KeyWord",
+    id: 1,
+    name: '组织1',
+    ismanagerplatform: 1,
+    status: 0,
+    creatorid: 1,
+    createtime: '2018-08-15',
+}, {
+    id: 2,
+    name: '组织2',
+    ismanagerplatform: 0,
+    status: 1,
+    creatorid: 1,
+    createtime: '2018-08-15',
 }]
 
 //查询
-Mock.mock(/\/api\/orga\/list/, 'get', function (options) {
-    const Name = getParam(options.url,'Name')
-    if(Name){
-        return _.filter(arr,item=>item.Name.indexOf(Name)>-1)
-    }else{
-        return arr
+Mock.mock(/\/api\/organization\/select/, 'get', function (options) {
+    const name = getParam(options.url, 'name')
+    const pagenum = parseInt(getParam(options.url, 'pagenum'))
+    const pagesize = parseInt(getParam(options.url, 'pagesize'))
+    var data = arr
+    if(name){
+        data =  _.filter(data, item => item.name.indexOf(name) > -1)
     }
+    const resultcounts = data.length
+    if(!isNaN(pagenum) && !isNaN(pagesize) ){
+        var start = (pagenum - 1) * pagesize
+        var end = pagenum * pagesize
+        data = data.slice(start, end)
+    }   
+    return { code: 0, resultcounts, data }
 })
 
 //新增
-Mock.mock('/api/orga/add', 'post', function (options) {
+Mock.mock('/api/organization/add', 'post', function (options) {
     let info = JSON.parse(options.body)
-    info.ID = Mock.Random.id()
-    info.CreateTime = Mock.Random.date()
-    info.Creator = 'System'
+    info.id = arr.length > 0 ? arr[arr.length - 1].id + 1 : 1
+    info.createtime = Mock.Random.date()
     arr.push(info)
-    return { code: 1, msg: '新增成功', data: info }
+    return { code: 0, msg: '新增成功', data: info }
 })
 
 //修改
-Mock.mock('/api/orga/edit', 'post', function (options) {
+Mock.mock('/api/organization/update', 'post', function (options) {
     let info = JSON.parse(options.body)
-    let origin = _.find(arr,(item)=>(item.ID === info.ID))
-    let updated = _.assign(origin,info)
-    return { code: 1, msg: '修改成功', data: updated }
+    let origin = _.find(arr, (item) => (item.id === info.id))
+    let updated = _.assign(origin, info)
+    return { code: 0, msg: '修改成功', data: updated }
 })
 
 //删除
-Mock.mock('/api/orga/delete', 'post', function (options) {
-    let ID = JSON.parse(options.body).ID
+Mock.mock(/\/api\/organization\/delete/, 'get', function (options) {
+    let id = getParam(options.url, 'id')
+    id = parseInt(id)
     _.remove(arr, item => (
-        item.ID === ID
+        item.id === id
     ))
-    return { code: 1, msg: '删除成功' }
+    return { code: 0, msg: '删除成功' }
 })

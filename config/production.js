@@ -7,7 +7,6 @@ const webpack = require('webpack')
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 config.mode = 'production'
-config.devtool=false
 
 config.plugins.push(new CleanWebpackPlugin(path.resolve(__dirname, '../dist'), {
     root: path.resolve(__dirname, '../'),

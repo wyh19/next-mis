@@ -5,7 +5,7 @@ const RadioGroup = Radio.Group
 const { Item, create } = Form
 @create({
     mapPropsToFields(props) {
-        if (props.formType === 'edit') {
+        if (props.formType === 'update') {
             let fields = {}
             for (let key in props.formData) {
                 fields[key] = Form.createFormField({
@@ -33,18 +33,18 @@ class InfoForm extends PureComponent {
         return (
             <Form>
                 {
-                    formType === 'edit' ? <Item>
-                        {getFieldDecorator('ID')(
-                            <Input type="hidden" />
+                    formType === 'update' ? <Item>
+                        {getFieldDecorator('id')(
+                            <Input type='hidden' />
                         )}
                     </Item> : null
                 }
                 <Item
                     {...formItemLayout}
-                    label="名称"
+                    label='名称'
                     hasFeedback
                 >
-                    {getFieldDecorator('Name', {
+                    {getFieldDecorator('name', {
                         rules: [{
                             required: true, message: '名称不能为空',
                         }],
@@ -54,47 +54,34 @@ class InfoForm extends PureComponent {
                 </Item>
                 <Item
                     {...formItemLayout}
-                    label="状态"
+                    label='状态'
                     hasFeedback
                 >
-                    {getFieldDecorator('Status', {
+                    {getFieldDecorator('status', {
                         rules: [{
                             required: true, message: '状态不能为空',
                         }],
                     })(
                         <RadioGroup>
-                            <Radio value={1}>启用</Radio>
-                            <Radio value={2}>不启用</Radio>
+                            <Radio value={0}>启用</Radio>
+                            <Radio value={1}>停用</Radio>
                         </RadioGroup>
                     )}
                 </Item>
                 <Item
                     {...formItemLayout}
-                    label="管理平台"
+                    label='管理企业'
                     hasFeedback
                 >
-                    {getFieldDecorator('IsManagerPlatform', {
+                    {getFieldDecorator('ismanagerplatform', {
                         rules: [{
-                            required: true, message: '管理平台不能为空',
+                            required: true, message: '管理企业不能为空',
                         }],
                     })(
                         <RadioGroup>
-                            <Radio value={true}>是</Radio>
-                            <Radio value={false}>否</Radio>
+                            <Radio value={1}>是</Radio>
+                            <Radio value={0}>否</Radio>
                         </RadioGroup>
-                    )}
-                </Item>
-                <Item
-                    {...formItemLayout}
-                    label="关键字"
-                    hasFeedback
-                >
-                    {getFieldDecorator('KeyWord', {
-                        rules: [{
-                            required: true, message: '关键字不能为空',
-                        }],
-                    })(
-                        <Input />
                     )}
                 </Item>
             </Form>

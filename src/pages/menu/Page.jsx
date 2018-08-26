@@ -8,7 +8,7 @@ class Page extends PureComponent {
     render() {
         return (
             <Fragment>
-                <SearchForm />
+                {/* <SearchForm /> */}
                 <DataTable />
                 <FormModal />
             </Fragment>

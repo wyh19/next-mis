@@ -3,21 +3,18 @@ USE_MOCK && require('../mock/menu')
 import axios from 'axios'
 import _ from 'lodash'
 
-const MENU_LIST = 'MENU_LIST'
-const OPEN_MENU = 'OPEN_MENU'
-const CLOSE_MENU = 'CLOSE_MENU'
+const FW_MENU_LIST = 'FW_MENU_LIST'
+const FW_OPEN_MENU = 'FW_OPEN_MENU'
+const FW_CLOSE_MENU = 'FW_CLOSE_MENU'
+const FW_ACTIVE_MENU = 'FW_ACTIVE_MENU'
+const FW_SHOW_MSG = 'FW_SHOW_MSG'
 
 const initState = {
     menus: [],
     openedMenus: [],
-    activeMenuCode: null
+    activeMenuCode: 'bench'
 }
 
-/**
- * 从嵌套的菜单列表中找出符合code的菜单对象，返回一个全新的值
- * @param {Array} menus 
- * @param {String} code 
- */
 function getMenuByCode(menus, code) {
     var result = {};
     for (var key in menus) {
@@ -39,14 +36,14 @@ function getMenuByCode(menus, code) {
 
 export function framework(state = initState, action) {
     switch (action.type) {
-        case MENU_LIST:
+        case FW_MENU_LIST:
             {
                 return {
                     ...state,
                     menus: action.payload
                 }
             }
-        case OPEN_MENU:
+        case FW_OPEN_MENU:
             {
                 let menuCode = action.payload
                 if (_.findIndex(state.openedMenus, v => v.code == menuCode) === -1) {
@@ -63,103 +60,79 @@ export function framework(state = initState, action) {
                     }
                 }
             }
-        case CLOSE_MENU:
+        case FW_CLOSE_MENU:
             {
                 let menuCode = action.payload
                 let openedMenus = _.filter(state.openedMenus, v => v.code !== menuCode)
                 let activeMenuCode = state.activeMenuCode === menuCode ? (openedMenus.length > 0 ? openedMenus[0].code : null) : state.activeMenuCode
+                if(!activeMenuCode){
+                    activeMenuCode = 'bench'
+                }
                 return {
                     ...state,
                     openedMenus: openedMenus,
                     activeMenuCode: activeMenuCode
                 }
             }
+        case FW_ACTIVE_MENU: {
+            let menuCode = action.payload
+            return {
+                ...state,
+                activeMenuCode: menuCode
+            }
+        }
         default:
             return state
     }
 }
 
-function menuList(data) {
-    return {
-        type: MENU_LIST,
-        payload: data
+function alasUrlToCode(data){
+    for(var i =0; i<data.length;i++){
+        var children = data[i].children
+        for(var j=0;j<children.length;j++){
+            var menu = children[j]
+            menu.code = menu.url
+        }
     }
+    return data
 }
 
-
-export function getMenuList() {
-    const menus = [{
-        icon: 'laptop',
-        text: '工作台',
-        code: 'bench'
-    },
-    {
-        icon: 'bars',
-        text: '菜单',
-        code: 'menu'
-    },
-    {
-        icon: 'bars',
-        text: '组织机构',
-        code: 'organization'
-    },
-    {
-        icon: 'bars',
-        text: '组织机构类别',
-        code: 'orgaType'
-    },
-    {
-        icon: 'bars',
-        text: '用户',
-        code: 'user'
-    },
-    {
-        icon: 'bars',
-        text: '用户组',
-        code: 'userGroup'
-    },
-    {
-        icon: 'bars',
-        text: '项目',
-        code: 'project'
-    },
-    {
-        icon: 'bars',
-        text: '角色',
-        code: 'role'
-    },
-    {
-        icon: 'bars',
-        text: '权限',
-        code: 'rights'
-    },
-    // {
-    //     icon: 'user',
-    //     text: '用户管理',
-    //     children: [{
-    //         text: '角色',
-    //         code: 'role'
-    //     },{
-    //         text: '权限',
-    //         code: 'rights'
-    //     }]
-    // },
-    ]
+export function getMenuList(userid) {
     return dispatch => {
-        dispatch(menuList(menus))
+        axios.get('/api/main/usermenulist',{params:{userid}})
+            .then(res => {
+                const { code, msg, data } = res.data
+                if (code == 0) {
+                    //做一下转义，将服务器返回结果的url别名为code
+                    let aliasdata = alasUrlToCode(data)
+                    dispatch({ type: FW_MENU_LIST, payload: aliasdata })
+                } else {
+                    dispatch({ type: FW_SHOW_MSG, msg })
+                }
+            })
+            .catch(e => {
+
+            })
     }
 }
 
 export function openMenu(menuCode) {
     return {
-        type: OPEN_MENU,
+        type: FW_OPEN_MENU,
         payload: menuCode
     }
 }
 
 export function closeMenu(menuCode) {
     return {
-        type: CLOSE_MENU,
+        type: FW_CLOSE_MENU,
+        payload: menuCode
+    }
+}
+
+export function activeMenu(menuCode) {
+    return {
+        type: FW_ACTIVE_MENU,
         payload: menuCode
     }
 }

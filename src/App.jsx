@@ -2,7 +2,7 @@
  * Created by 30113 on 2018/5/5.
  */
 import React from 'react'
-import { BrowserRouter, Route, Switch } from 'react-router-dom'
+import { BrowserRouter,HashRouter, Route, Switch } from 'react-router-dom'
 import Login from './pages/login/Login'
 import Home from './pages/home/Home'
 import { hot } from 'react-hot-loader'
@@ -17,16 +17,16 @@ class App extends React.Component {
         return (
             (
                 <Provider store={store}>
-                    <BrowserRouter>
+                    <HashRouter>
                         <React.Fragment>
-                            {/* <AuthRoute /> */}
+                            <AuthRoute />
                             <Switch>
-                                <Route path="/login" component={Login} />
-                                <Route path="/home" component={Home} />
+                                <Route path='/login' component={Login} />
+                                <Route path='/home' component={Home} />
                                 <Route component={Home} />
                             </Switch>
                         </React.Fragment>
-                    </BrowserRouter>
+                    </HashRouter>
                 </Provider>
             )
         )

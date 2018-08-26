@@ -2,7 +2,7 @@
  * Created by 30113 on 2018/3/22.
  */
 import React from 'react'
-import { Menu, Icon } from 'antd';
+import { Menu } from 'antd';
 import { connect } from 'react-redux'
 import { getMenuList, openMenu } from '../../redux/framework.redux'
 
@@ -10,12 +10,12 @@ const SubMenu = Menu.SubMenu
 const MenuItem = Menu.Item
 
 @connect(
-    state => state.framework,
+    state => state,
     { getMenuList, openMenu }
 )
 class MenuBar extends React.Component {
     componentDidMount() {
-        this.props.getMenuList()
+        this.props.getMenuList(this.props.auth.userid)
     }
     handleClick = (e) => {
         this.props.openMenu(e.key)
@@ -24,7 +24,7 @@ class MenuBar extends React.Component {
         return menus.map(v => {
             if (v.children) {
                 return (
-                    <SubMenu key={v.code ? v.code : v.text} title={<span><Icon type={v.icon} /><span>{v.text}</span></span>}>
+                    <SubMenu key={v.code ? v.code : v.id} title={v.name}>
                         {
                             this.mapMenus(v.children)
                         }
@@ -35,8 +35,7 @@ class MenuBar extends React.Component {
                     <MenuItem
                         key={v.code}
                     >
-                        <Icon type={v.icon} />
-                        <span className="nav-text">{v.text}</span>
+                        <span className='nav-text'>{v.name}</span>
                     </MenuItem>
                 )
             }
@@ -44,12 +43,13 @@ class MenuBar extends React.Component {
     }
     render() {
         return (
-            <Menu theme="dark"
-                mode={this.props.mode}
+            <Menu theme='dark'
+                mode={'inline'}
+                selectedKeys={[this.props.framework.activeMenuCode]}
                 onClick={this.handleClick}
             >
                 {
-                    this.mapMenus(this.props.menus)
+                    this.mapMenus(this.props.framework.menus)
                 }
             </Menu>
         )

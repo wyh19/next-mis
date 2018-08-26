@@ -1,4 +1,4 @@
-USE_MOCK && require('../mock/userGroup')
+USE_MOCK && require('../mock/usergroup')
 
 import axios from 'axios'
 import _ from 'lodash'
@@ -10,7 +10,6 @@ const USERGROUP_ADD_INFO = 'USERGROUP_ADD_INFO'
 const USERGROUP_EDIT_INFO = 'USERGROUP_EDIT_INFO'
 const USERGROUP_DELETE_INFO = 'USERGROUP_DELETE_INFO'
 const USERGROUP_SHOW_MSG = 'USERGROUP_SHOW_MSG'
-const USERGROUP_GET_USER_LIST = 'USERGROUP_GET_USER_LIST'
 const USERGROUP_GET_ROLE_LIST = 'USERGROUP_GET_ROLE_LIST'
 
 const initState = {
@@ -20,11 +19,16 @@ const initState = {
     formData: {},
     dataList: [],
     msg: '',
-    userList: [],
-    roleList:[],
+    roleList: [],
+    pagination: {
+        showSizeChanger: true,
+        pageSize: 10,
+        current: 1,
+        total: 0
+    }
 }
 
-export function userGroup(state = initState, action) {
+export function usergroup(state = initState, action) {
     switch (action.type) {
         case USERGROUP_SEARCH_FORM: {
             return {
@@ -33,10 +37,15 @@ export function userGroup(state = initState, action) {
             }
         }
         case USERGROUP_GET_LIST: {
-            return { ...state, dataList: action.payload }
-        }
-        case USERGROUP_GET_USER_LIST: {
-            return { ...state, userList: action.payload }
+            let pagination = _.cloneDeep(state.pagination)
+            pagination.total = action.total
+            pagination.current = action.current
+            pagination.pageSize = action.pageSize
+            return {
+                ...state,
+                dataList: action.payload,
+                pagination: pagination
+            }
         }
         case USERGROUP_GET_ROLE_LIST: {
             return { ...state, roleList: action.payload }
@@ -51,29 +60,35 @@ export function userGroup(state = initState, action) {
         }
         case USERGROUP_ADD_INFO: {
             let dataList = _.cloneDeep(state.dataList)
-            dataList.push(action.data)
+            dataList.unshift(action.data)
+            let pagination = _.cloneDeep(state.pagination)
+            pagination.total += 1
             return {
                 ...state,
                 modalOpen: false,
-                dataList: dataList
+                dataList: dataList,
+                pagination
             }
         }
         case USERGROUP_EDIT_INFO: {
             let dataList = _.cloneDeep(state.dataList)
-            let toUpdate = _.find(dataList, item => (item.ID === action.data.ID))
+            let toUpdate = _.find(dataList, item => (item.id === action.data.id))
             _.assign(toUpdate, action.data)
             return {
                 ...state,
                 modalOpen: false,
-                dataList: dataList
+                dataList: dataList,
             }
         }
         case USERGROUP_DELETE_INFO: {
             let dataList = _.cloneDeep(state.dataList)
-            _.remove(dataList, item => item.ID === action.ID)
+            _.remove(dataList, item => item.id === action.id)
+            let pagination = _.cloneDeep(state.pagination)
+            pagination.total -= 1
             return {
                 ...state,
-                dataList: dataList
+                dataList: dataList,
+                pagination
             }
         }
         default:
@@ -84,9 +99,20 @@ export function userGroup(state = initState, action) {
 export function getList(params) {
     return dispatch => {
         dispatch({ type: USERGROUP_SEARCH_FORM, data: params })
-        axios.get('/api/userGroup/list', { params })
+        axios.get('/api/usergroup/select', { params })
             .then(res => {
-                dispatch({ type: USERGROUP_GET_LIST, payload: res.data })
+                const { code, msg, resultcounts, data } = res.data
+                if (code == 0) {
+                    dispatch({
+                        type: USERGROUP_GET_LIST,
+                        payload: data,
+                        total: resultcounts,
+                        current: params.pagenum,
+                        pageSize: params.pagesize
+                    })
+                } else {
+                    dispatch({ type: USERGROUP_SHOW_MSG, msg })
+                }
             })
             .catch(e => {
 
@@ -100,10 +126,10 @@ export function handleModalForm(formType, modalOpen, formData) {
 
 export function addInfo(info) {
     return dispatch => {
-        axios.post('/api/userGroup/add', info)
+        axios.post('/api/usergroup/add', info)
             .then(res => {
                 const { code, msg, data } = res.data
-                if (code == 1) {
+                if (code == 0) {
                     dispatch({ type: USERGROUP_ADD_INFO, msg, data })
                 } else {
                     dispatch({ type: USERGROUP_SHOW_MSG, msg })
@@ -117,10 +143,10 @@ export function addInfo(info) {
 
 export function editInfo(info) {
     return dispatch => {
-        axios.post('/api/userGroup/edit', info)
+        axios.post('/api/usergroup/update', info)
             .then(res => {
                 const { code, msg, data } = res.data
-                if (code == 1) {
+                if (code == 0) {
                     dispatch({ type: USERGROUP_EDIT_INFO, msg, data })
                 } else {
                     dispatch({ type: USERGROUP_SHOW_MSG, msg })
@@ -132,13 +158,13 @@ export function editInfo(info) {
     }
 }
 
-export function deleteInfo(ID) {
+export function deleteInfo(id) {
     return dispatch => {
-        axios.post('/api/userGroup/delete', { ID })
+        axios.get('/api/usergroup/delete',  { params: { id } })
             .then(res => {
                 const { code, msg } = res.data
-                if (code == 1) {
-                    dispatch({ type: USERGROUP_DELETE_INFO, msg, ID })
+                if (code == 0) {
+                    dispatch({ type: USERGROUP_DELETE_INFO, msg, id })
                 } else {
                     dispatch({ type: USERGROUP_SHOW_MSG, msg })
                 }
@@ -149,23 +175,19 @@ export function deleteInfo(ID) {
     }
 }
 
-export function getUserList() {
-    return dispatch => {
-        axios.get('/api/user/list')
-            .then(res => {
-                dispatch({ type: USERGROUP_GET_USER_LIST, payload: res.data })
-            })
-            .catch(e => {
-
-            })
-    }
-}
-
 export function getRoleList() {
     return dispatch => {
-        axios.get('/api/role/list')
+        axios.get('/api/roleinfo/select')
             .then(res => {
-                dispatch({ type: USERGROUP_GET_ROLE_LIST, payload: res.data })
+                const { code, msg,  data } = res.data
+                if (code == 0) {
+                    dispatch({
+                        type: USERGROUP_GET_ROLE_LIST,
+                        payload: data,
+                    })
+                } else {
+                    dispatch({ type: USERGROUP_SHOW_MSG, msg })
+                }
             })
             .catch(e => {
 

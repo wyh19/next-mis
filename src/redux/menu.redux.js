@@ -18,6 +18,7 @@ const initState = {
     formData: {},
     dataList: [],
     msg: '',
+    refresh:false,
 }
 
 export function menu(state = initState, action) {
@@ -29,7 +30,11 @@ export function menu(state = initState, action) {
             }
         }
         case MENU_GET_LIST: {
-            return { ...state, dataList: action.payload }
+            return {
+                ...state,
+                dataList: action.payload,
+                refresh:false
+            }
         }
         case MENU_HANDLE_MODAL_FORM: {
             return {
@@ -40,30 +45,23 @@ export function menu(state = initState, action) {
             }
         }
         case MENU_ADD_INFO: {
-            let dataList = _.cloneDeep(state.dataList)
-            dataList.push(action.data)
             return {
                 ...state,
                 modalOpen: false,
-                dataList: dataList
+                refresh:true,
             }
         }
         case MENU_EDIT_INFO: {
-            let dataList = _.cloneDeep(state.dataList)
-            let toUpdate = _.find(dataList, item => (item.ID === action.data.ID))
-            _.assign(toUpdate, action.data)
             return {
                 ...state,
                 modalOpen: false,
-                dataList: dataList
+                refresh:true,
             }
         }
         case MENU_DELETE_INFO: {
-            let dataList = _.cloneDeep(state.dataList)
-            _.remove(dataList, item => item.ID === action.ID)
             return {
                 ...state,
-                dataList: dataList
+                refresh:true,
             }
         }
         default:
@@ -73,10 +71,18 @@ export function menu(state = initState, action) {
 
 export function getList(params) {
     return dispatch => {
-        dispatch({ type: MENU_SEARCH_FORM, data: params })
-        axios.get('/api/menu/list', { params })
+        // dispatch({ type: MENU_SEARCH_FORM, data: params })
+        axios.get('/api/menu/select', { params })
             .then(res => {
-                dispatch({ type: MENU_GET_LIST, payload: res.data })
+                const { code, msg, data } = res.data
+                if (code == 0) {
+                    dispatch({
+                        type: MENU_GET_LIST,
+                        payload: data,
+                    })
+                } else {
+                    dispatch({ type: MENU_SHOW_MSG, msg })
+                }
             })
             .catch(e => {
 
@@ -93,7 +99,7 @@ export function addInfo(info) {
         axios.post('/api/menu/add', info)
             .then(res => {
                 const { code, msg, data } = res.data
-                if (code == 1) {
+                if (code == 0) {
                     dispatch({ type: MENU_ADD_INFO, msg, data })
                 } else {
                     dispatch({ type: MENU_SHOW_MSG, msg })
@@ -107,10 +113,10 @@ export function addInfo(info) {
 
 export function editInfo(info) {
     return dispatch => {
-        axios.post('/api/menu/edit', info)
+        axios.post('/api/menu/update', info)
             .then(res => {
                 const { code, msg, data } = res.data
-                if (code == 1) {
+                if (code == 0) {
                     dispatch({ type: MENU_EDIT_INFO, msg, data })
                 } else {
                     dispatch({ type: MENU_SHOW_MSG, msg })
@@ -122,13 +128,13 @@ export function editInfo(info) {
     }
 }
 
-export function deleteInfo(ID) {
+export function deleteInfo(id) {
     return dispatch => {
-        axios.post('/api/menu/delete', { ID })
+        axios.get('/api/menu/delete', { params: { id } })
             .then(res => {
                 const { code, msg } = res.data
-                if (code == 1) {
-                    dispatch({ type: MENU_DELETE_INFO, msg, ID })
+                if (code == 0) {
+                    dispatch({ type: MENU_DELETE_INFO, msg, id })
                 } else {
                     dispatch({ type: MENU_SHOW_MSG, msg })
                 }

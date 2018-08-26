@@ -4,7 +4,7 @@ import { Spin } from 'antd'
 class Loading extends PureComponent {
     render() {
         return (
-            <Spin size="large" />
+            <Spin size='large' />
         )
     }
 }

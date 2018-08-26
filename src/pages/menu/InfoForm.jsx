@@ -1,12 +1,12 @@
 import React, { PureComponent } from 'react'
-import { Form, Input, Radio } from 'antd'
-import {connect} from 'react-redux'
+import { Form, Input, Radio, Select } from 'antd'
+import { connect } from 'react-redux'
 
 const { Item, create } = Form
 const RadioGroup = Radio.Group
 @create({
     mapPropsToFields(props) {
-        if (props.formType === 'edit') {
+        if (props.formType === 'update') {
             let fields = {}
             for (let key in props.formData) {
                 fields[key] = Form.createFormField({
@@ -18,7 +18,7 @@ const RadioGroup = Radio.Group
     }
 })
 @connect(
-    state=>state.menu
+    state => state.menu
 )
 class InfoForm extends PureComponent {
     render() {
@@ -37,18 +37,18 @@ class InfoForm extends PureComponent {
         return (
             <Form>
                 {
-                    formType === 'edit' ? <Item>
-                        {getFieldDecorator('ID')(
-                            <Input type="hidden" />
+                    formType === 'update' ? <Item>
+                        {getFieldDecorator('id')(
+                            <Input type='hidden' />
                         )}
                     </Item> : null
                 }
                 <Item
                     {...formItemLayout}
-                    label="名称"
+                    label='名称'
                     hasFeedback
                 >
-                    {getFieldDecorator('Name', {
+                    {getFieldDecorator('name', {
                         rules: [{
                             required: true, message: '名称不能为空',
                         }],
@@ -58,30 +58,47 @@ class InfoForm extends PureComponent {
                 </Item>
                 <Item
                     {...formItemLayout}
-                    label="Url"
+                    label='Url'
                     hasFeedback
                 >
-                    {getFieldDecorator('Url', {
-                        rules: [{
-                            required: true, message: 'Url不能为空',
-                        }],
-                    })(
+                    {getFieldDecorator('url')(
                         <Input />
                     )}
                 </Item>
                 <Item
                     {...formItemLayout}
-                    label="状态"
+                    label='父节点'
                     hasFeedback
                 >
-                    {getFieldDecorator('Status', {
+                    {getFieldDecorator('parentid')(
+                        <Select>
+                            {
+                                this.props.dataList.map(v => {
+                                    if (v.level === 1) {
+                                        return (
+                                            <Select.Option key={v.id} value={v.id}>
+                                                {v.name}
+                                            </Select.Option>
+                                        )
+                                    }
+                                })
+                            }
+                        </Select>
+                    )}
+                </Item>
+                <Item
+                    {...formItemLayout}
+                    label='状态'
+                    hasFeedback
+                >
+                    {getFieldDecorator('status', {
                         rules: [{
                             required: true, message: '状态不能为空',
                         }],
                     })(
                         <RadioGroup>
-                            <Radio value={1}>启用</Radio>
-                            <Radio value={2}>不启用</Radio>
+                            <Radio value={0}>启用</Radio>
+                            <Radio value={1}>停用</Radio>
                         </RadioGroup>
                     )}
                 </Item>

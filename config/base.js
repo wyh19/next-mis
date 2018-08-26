@@ -1,9 +1,9 @@
 /**
  * Created by 30113 on 2018/6/5.
  */
-const path = require("path")
-const HTMLWebpackPlugin = require("html-webpack-plugin")
-const MiniCssExtractPlugin = require("mini-css-extract-plugin")
+const path = require('path')
+const HTMLWebpackPlugin = require('html-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const LodashModuleReplacementPlugin = require('lodash-webpack-plugin')
 
 let config = {
@@ -13,22 +13,22 @@ let config = {
     output: {
         path: path.join(__dirname, '../dist'),
         filename: '[name].[hash].js',
-        chunkFilename: "[name].[hash].js",
+        chunkFilename: '[name].[hash].js',
         publicPath: ''
     },
     optimization: {
         runtimeChunk: {
-            name: "manifest"
+            name: 'manifest'
         },
         splitChunks: {
             cacheGroups: {
                 commons: {
-                    name: "commons",
-                    chunks: "initial",
+                    name: 'commons',
+                    chunks: 'initial',
                     minChunks: 2
                     // test: /node_modules/,
-                    // name: "vendor",
-                    // chunks: "all"
+                    // name: 'vendor',
+                    // chunks: 'all'
                 }
             }
         }
@@ -40,17 +40,17 @@ let config = {
                 exclude: /node_modules/,
                 loader: 'babel-loader',
                 options: {
-                    presets: [['env'], "stage-0", 'react'],
+                    presets: [['env'], 'stage-0', 'react'],
                     plugins: [
                         'react-hot-loader/babel',
-                        "syntax-dynamic-import",
+                        'syntax-dynamic-import',
                         'transform-decorators-legacy',
                         'lodash',
                         [
-                            "import",
+                            'import',
                             {
-                                "libraryName": "antd",
-                                "style": "css"
+                                'libraryName': 'antd',
+                                'style': 'css'
                             }
                         ]
                     ]
@@ -71,7 +71,7 @@ let config = {
                     loader: 'resolve-url-loader'
                 },
                 {
-                    loader: "sass-loader",
+                    loader: 'sass-loader',
                     options: {
                         sourceMap: true,
                         includePaths: [path.resolve(__dirname, '../node_modules/compass-mixins/lib')]
@@ -108,7 +108,7 @@ let config = {
             template: path.join(__dirname, '../public/index.html')
         }),
         new MiniCssExtractPlugin({
-            filename: "[name].[hash].css"
+            filename: '[name].[hash].css'
         }),
         new LodashModuleReplacementPlugin({
             'collections': true,
@@ -117,10 +117,10 @@ let config = {
     ],
     resolve: {
         modules: [
-            "node_modules",
-            path.resolve(__dirname, "../src")
+            'node_modules',
+            path.resolve(__dirname, '../src')
         ],
-        extensions: [".js", ".jsx"],
+        extensions: ['.js', '.jsx'],
     },
 }
 

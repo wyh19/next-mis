@@ -47,7 +47,7 @@ class SearchForm extends PureComponent {
                 <Row gutter={16}>
                     <Col span={6}>
                         <Item label='名称'>
-                            {getFieldDecorator('Name')(
+                            {getFieldDecorator('name')(
                                 <Input />
                             )}
                         </Item>
@@ -61,10 +61,10 @@ class SearchForm extends PureComponent {
                     </Col>
                     <Col span={6}>
                         <Item label='状态'>
-                            {getFieldDecorator('Status')(
+                            {getFieldDecorator('status')(
                                 <RadioGroup>
                                     <Radio value={1}>启用</Radio>
-                                    <Radio value={2}>不启用</Radio>
+                                    <Radio value={2}>停用</Radio>
                                 </RadioGroup>
                             )}
                         </Item>

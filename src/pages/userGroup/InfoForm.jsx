@@ -1,17 +1,12 @@
 import React, { PureComponent } from 'react'
-import { Form, Input, Select } from 'antd'
-import locale from 'antd/lib/date-picker/locale/zh_CN';
-import moment from 'moment';
-import 'moment/locale/zh-cn';
+import { Form, Input, Select, Radio } from 'antd'
 import { connect } from 'react-redux'
-import _ from 'lodash'
 
 const { Item, create } = Form
-const { Option } = Select
 
 @create({
     mapPropsToFields(props) {
-        if (props.formType === 'edit') {
+        if (props.formType === 'update') {
             let fields = {}
             for (let key in props.formData) {
                 fields[key] = Form.createFormField({
@@ -23,7 +18,7 @@ const { Option } = Select
     }
 })
 @connect(
-    state => state.userGroup
+    state => state.usergroup
 )
 class InfoForm extends PureComponent {
     render() {
@@ -42,18 +37,18 @@ class InfoForm extends PureComponent {
         return (
             <Form>
                 {
-                    formType === 'edit' ? <Item>
-                        {getFieldDecorator('ID')(
-                            <Input type="hidden" />
+                    formType === 'update' ? <Item>
+                        {getFieldDecorator('id')(
+                            <Input type='hidden' />
                         )}
                     </Item> : null
                 }
                 <Item
                     {...formItemLayout}
-                    label="名称"
+                    label='名称'
                     hasFeedback
                 >
-                    {getFieldDecorator('Name', {
+                    {getFieldDecorator('name', {
                         rules: [{
                             required: true, message: '名称不能为空',
                         }],
@@ -63,60 +58,41 @@ class InfoForm extends PureComponent {
                 </Item>
                 <Item
                     {...formItemLayout}
-                    label="描述"
+                    label='类别'
                     hasFeedback
                 >
-                    {getFieldDecorator('Description', {
+                    {getFieldDecorator('type', {
                         rules: [{
-                            required: true, message: '描述不能为空',
+                            required: true, message: '类别不能为空',
                         }],
                     })(
-                        <Input />
-                    )}
-                </Item>
-               <Item
-                    {...formItemLayout}
-                    label="关联角色"
-                    hasFeedback
-                >
-                    {getFieldDecorator('Roles')(
-                        <Select
-                            mode="multiple"
-                        >
-                            {
-                                this.props.roleList.map(v => {
-                                    return (
-                                        <Option key={v.ID} value={v.ID}>
-                                            {v.Name}
-                                        </Option>
-                                    )
-                                })
-                            }
-                        </Select>
+                        <Radio.Group>
+                            <Radio value={1}>标准</Radio>
+                            <Radio value={2}>非标准</Radio>
+                        </Radio.Group>
                     )}
                 </Item>
                 <Item
                     {...formItemLayout}
-                    label="关联用户"
+                    label='关联角色'
                     hasFeedback
                 >
-                    {getFieldDecorator('Users')(
+                    {getFieldDecorator('roleids')(
                         <Select
-                            mode="multiple"
+                            mode='multiple'
                         >
                             {
-                                this.props.userList.map(v => {
+                                this.props.roleList.map(v => {
                                     return (
-                                        <Option key={v.ID} value={v.ID}>
-                                            {v.Name}
-                                        </Option>
+                                        <Select.Option key={v.id} value={v.id}>
+                                            {v.name}
+                                        </Select.Option>
                                     )
                                 })
                             }
                         </Select>
                     )}
                 </Item>
-            
             </Form>
         )
     }
