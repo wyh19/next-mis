@@ -5,6 +5,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import InfoForm from './InfoForm'
+import Footer from './Footer'
 import './Login.scss';
 
 @connect(
@@ -17,8 +18,8 @@ class Login extends React.Component {
         {this.props.redirectTo && this.props.redirectTo !== '/login' ? (
           <Redirect to={this.props.redirectTo} />
         ) : null}
-        <div className='login-logo'></div>
         <InfoForm />
+        <Footer />
       </div>
     );
   }

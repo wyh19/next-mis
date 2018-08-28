@@ -52,8 +52,8 @@ class InfoForm extends Component {
         const { getFieldDecorator } = this.props.form;
         return (
             <Form onSubmit={this.handleSubmit} className='login-form'>
-                <div className='login-form-title'>
-                苗建信息数据处理中心
+                <div className='login-form-logo'>
+                    通用管理项目展示系统
                 </div>
                 <Item>
                     {getFieldDecorator('loginname', {
@@ -79,6 +79,7 @@ class InfoForm extends Component {
                 <Button size='large' type='primary' htmlType='submit' className='login-form-button'>
                     登录
                 </Button>
+                <div>用户名：admin;密码：1</div>
             </Form>
         );
     }
