@@ -12,8 +12,8 @@ let config = {
     },
     output: {
         path: path.join(__dirname, '../dist'),
-        filename: '[name].[hash].js',
-        chunkFilename: '[name].[hash].js',
+        filename: '[name].[chunkhash].js',
+        chunkFilename: '[name].[chunkhash].js',
         publicPath: ''
     },
     optimization: {
@@ -86,7 +86,7 @@ let config = {
                     options: {
                         limit: 1024 * 5,
                         fallback: 'file-loader',
-                        name: '[name]-[hash].[ext]',
+                        name: '[name]-[chunkhash].[ext]',
                         outputPath: 'image'
                     }
                 }]
@@ -108,7 +108,7 @@ let config = {
             template: path.join(__dirname, '../public/index.html')
         }),
         new MiniCssExtractPlugin({
-            filename: '[name].[hash].css'
+            filename: '[name].[chunkhash].css'
         }),
         new LodashModuleReplacementPlugin({
             'collections': true,
