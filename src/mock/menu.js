@@ -110,6 +110,16 @@ let arr = [
         creatorid:1,
         createtime:'2018-08-15',
     },
+    {
+        id: 58,
+        name: '页面编辑',
+        url: 'editpage',
+        parentid: 50,
+        level: 2,
+        status: 0,
+        creatorid:1,
+        createtime:'2018-08-15',
+    },
 ]
 
 Mock.mock(/\/api\/main\/usermenulist/, 'get', function (options) {

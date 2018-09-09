@@ -1,0 +1,13 @@
+.ep-headerbar{
+    height:30px;
+    line-height: 30px;
+    &>div{
+        display:inline-block;
+        padding: 0 5px;
+    }
+    .ant-divider-vertical{
+        padding: 0;
+        height:30px;
+        background-color:#aaa;
+    }
+}
