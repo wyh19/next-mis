@@ -1,2 +1,4 @@
 {
+    "javascript.implicitProjectConfig.experimentalDecorators": true,
+    "cssrem.rootFontSize": 14
 }
