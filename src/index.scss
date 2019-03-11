@@ -1,0 +1,8 @@
+@import 'compass/reset';
+
+
+:global(#root) {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
